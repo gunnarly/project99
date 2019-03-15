@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Project 99</title>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body style="background-color:#204909;">
+<canvas id="mainCanvas" width="960" height="540">Your web browser sucks balls!</canvas>
+<script>
+const KEY_UP_DIRECTION = 87;
+const KEY_DOWN_DIRECTION = 83;
+const KEY_LEFT_DIRECTION = 65;
+const KEY_RIGHT_DIRECTION = 68;
+
+const WIDTH = 960;
+const HEIGHT = 540;
+
+const BALLOON_WIDTH = 181;
+const BALLOON_HEIGHT = 256;
+
+const POSITION_TOP_LIMIT = 0;
+const POSITION_BOTTOM_LIMIT = HEIGHT - BALLOON_HEIGHT;
+const POSITION_RIGHT_LIMIT = WIDTH - BALLOON_WIDTH;
+const POSITION_LEFT_LIMIT = 0;
+
+var distanceFlown = 0;
+
+//#region setup
+var pressedKeys = new Set();
+
+var balloonImg = loadImage("balloon.png");
+var landscapeImg = loadImage("landscape.png");
+
+function loadImage(source){
+    var image = new Image;
+    image.src = source;
+    return image;
+}
+
+window.addEventListener("keydown", onKeyDown, false);
+window.addEventListener("keyup", onKeyUp, false);
+
+function onKeyDown(e){
+    pressedKeys.add(e.keyCode);
+}
+function onKeyUp(e){
+    pressedKeys.delete(e.keyCode);
+}
+
+//#region classes
+function Balloon(){
+    this.x = 10;
+    this.y = 10;
+}
+
+//#region the rest
+var balloon = new Balloon();
+
+function onGameUpdate(){
+    balloon.y += 0.25;
+    if(pressedKeys.has(KEY_UP_DIRECTION)){
+        balloon.y -= 2;
+    }
+    if(pressedKeys.has(KEY_DOWN_DIRECTION)){
+        balloon.y += 1;
+    }
+    if(pressedKeys.has(KEY_LEFT_DIRECTION)){
+        balloon.x -= 2;
+    }
+    if(pressedKeys.has(KEY_RIGHT_DIRECTION)){
+        balloon.x += 2;
+    }
+
+
+    if (balloon.y < POSITION_TOP_LIMIT) {
+        balloon.y = POSITION_TOP_LIMIT;
+    }
+    if (balloon.y > POSITION_BOTTOM_LIMIT) {
+        balloon.y = POSITION_BOTTOM_LIMIT;
+    }
+    if (balloon.x < POSITION_LEFT_LIMIT) {
+        balloon.x = POSITION_LEFT_LIMIT;
+    }
+    if (balloon.x > POSITION_RIGHT_LIMIT) {
+        balloon.x = POSITION_RIGHT_LIMIT;
+    }
+
+    distanceFlown++;
+}
+
+function draw(){
+    var canvas = document.getElementById("mainCanvas");
+    var context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    var gradient = context.createLinearGradient(0, 0, 0, canvas.height)
+    gradient.addColorStop(0, "#3895D3");
+    gradient.addColorStop(1, "aliceblue");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    var backgroundOffset = (-distanceFlown) % landscapeImg.width;
+    context.drawImage(landscapeImg, backgroundOffset, canvas.height - landscapeImg.height);
+    context.drawImage(landscapeImg, backgroundOffset + landscapeImg.width, canvas.height - landscapeImg.height);
+    context.drawImage(balloonImg, balloon.x, balloon.y);
+}
+
+setInterval(onGameUpdate, 1000 / 60);
+setInterval(draw, 1000 / 60);
+
+</script>
+</body>
+</html>
